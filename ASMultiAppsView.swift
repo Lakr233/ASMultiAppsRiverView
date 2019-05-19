@@ -20,6 +20,7 @@ class ASMultiAppsView: UIView {
     public var image_radius         = CGFloat()
     
     public var contentView          = UIView()
+    public var angle_wrapper        = UIView()
     
     func apart_init(card_width: CGFloat = 466, card_hight: CGFloat = 233,
                     images: [UIImage] = [], animate: Bool = true,
@@ -33,6 +34,8 @@ class ASMultiAppsView: UIView {
         self.image_radius = image_radius
         self.bounds.size = CGSize(width: card_width, height: card_hight)
         self.build_view()
+        self.angle_wrapper.clipsToBounds = true
+        self.contentView.transform = CGAffineTransform(rotationAngle: -90 + self.image_angle)
     }
     
     func build_view() {
@@ -40,20 +43,37 @@ class ASMultiAppsView: UIView {
             item.removeFromSuperview()
         }
         
-        self.contentView = UIView()
-        self.contentView.clipsToBounds = true
-        self.addSubview(self.contentView)
-        self.contentView.snp.makeConstraints { (x) in
+        self.addSubview(angle_wrapper)
+        self.angle_wrapper.snp.makeConstraints { (x) in
             x.top.equalTo(self.snp.top)
             x.left.equalTo(self.snp.left)
             x.right.equalTo(self.snp.right)
             x.bottom.equalTo(self.snp.bottom)
         }
         
+        self.contentView = UIView()
+        self.angle_wrapper.addSubview(self.contentView)
+        self.contentView.snp.makeConstraints { (x) in
+            x.top.equalTo(self.angle_wrapper.snp.top)
+            x.left.equalTo(self.angle_wrapper.snp.left)
+            x.right.equalTo(self.angle_wrapper.snp.right)
+            x.bottom.equalTo(self.angle_wrapper.snp.bottom)
+        }
+        
         // 计算一行的View个数
         let count = Int(self.bounds.width / (self.image_size.width + self.image_gap)) + 3
         // 计算行数
-        let lines = Int(self.bounds.height / (self.image_size.height + self.image_gap)) + 1
+        var lines = Int(self.bounds.height / (self.image_size.height + self.image_gap)) + 1
+        
+        if image_angle != 0 {
+            lines += 3
+            self.contentView.snp.remakeConstraints { (x) in
+                x.top.equalTo(self.angle_wrapper.snp.top).offset(-128)
+                x.left.equalTo(self.angle_wrapper.snp.left)
+                x.right.equalTo(self.angle_wrapper.snp.right)
+                x.bottom.equalTo(self.angle_wrapper.snp.bottom).offset(128)
+            }
+        }
         
         for y in 1...lines {
             let yp = CGFloat(y - 1) * (self.image_size.height + self.image_gap) + self.image_size.height / 2
@@ -92,6 +112,7 @@ class ASMultiAppsView: UIView {
                 
             }
         }
+        
     }
     
     func animate_my_image(start_x: CGFloat, end_x: CGFloat, the_element: UIImageView, x: Int) {
@@ -104,13 +125,53 @@ class ASMultiAppsView: UIView {
     
 }
 
+
+
+//
+//  ViewController.swift
+//  ASMultiAppsView
+//
+//  Created by Lakr Aream on 2019/5/18.
+//  Copyright © 2019 Lakr Aream. All rights reserved.
+//
+
+//import UIKit
+//
+//class ViewController: UIViewController {
+//
+//    override func viewDidLoad() {
+//        super.viewDidLoad()
+//
+//        let image_container: [UIImage]   = [UIImage(named: "0")!,
+//                                            UIImage(named: "1")!,
+//                                            UIImage(named: "2")!,
+//                                            UIImage(named: "3")!,
+//                                            UIImage(named: "4")!]
+//
+//        let new = ASMultiAppsView()
+//        self.view.addSubview(new)
+//        new.apart_init(images: image_container)
+//        // There is a framework called NightNight, so I do this for future reuse.
+//        new.backgroundColor = .white
+//        new.setRadius()
+//        new.dropShadow()
+//        new.snp.makeConstraints { (x) in
+//            x.center.equalTo(self.view.snp.center)
+//            x.height.equalTo(new.bounds.height)
+//            x.width.equalTo(new.bounds.width)
+//        }
+//    }
+//
+//
+//}
+//
 //extension UIView {
-//    
+//
 //    func setRadius(how_much: CGFloat = 8) {
 //        self.layer.cornerRadius = how_much;
 //        self.layer.masksToBounds = true;
 //    }
-//    
+//
 //    func dropShadow() {
 //        self.layer.masksToBounds = false
 //        self.layer.shadowColor = UIColor.black.cgColor
@@ -121,23 +182,4 @@ class ASMultiAppsView: UIView {
 //        self.layer.shouldRasterize = true
 //        self.layer.rasterizationScale = UIScreen.main.scale
 //    }
-//}
-
-//override func viewDidLoad() {
-//    super.viewDidLoad()
-//    
-//    let image_container: [UIImage]   = [UIImage(named: "0")!,
-//                                        UIImage(named: "1")!,
-//                                        UIImage(named: "2")!,
-//                                        UIImage(named: "3")!,
-//                                        UIImage(named: "4")!]
-//    
-//    let new = ASMultiAppsView()
-//    self.view.addSubview(new)
-//    new.apart_init(images: image_container)
-//    // There is a framework called NightNight, so I do this for future reuse.
-//    new.backgroundColor = .white
-//    new.setRadius()
-//    new.dropShadow()
-//    new.center = self.view.center
 //}
