@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
   [https://github.com/Co2333/ASMultiAppsRiverView]
                        DESC
 
-  s.homepage         = 'https://github.com/Co2333/ASMultiAppsView'
+  s.homepage         = 'https://github.com/Co2333/ASMultiAppsRiverView'
   s.screenshots      = 'https://github.com/Co2333/ASMultiAppsRiverView/raw/master/main.png'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Lakr Aream' => 'master@233owo.com' }
@@ -39,4 +39,7 @@ Pod::Spec.new do |s|
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
   s.dependency 'SnapKit'
+  
+  s.swift_versions = "4.0"
+  
 end
