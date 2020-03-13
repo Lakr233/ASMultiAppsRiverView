@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'ASMultiAppsView_Example' do
+  pod 'ASMultiAppsView', :path => '../'
+
+  target 'ASMultiAppsView_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end

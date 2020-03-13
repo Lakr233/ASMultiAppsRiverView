@@ -1,0 +1,6 @@
+framework module ASMultiAppsView {
+  umbrella header "ASMultiAppsView-umbrella.h"
+
+  export *
+  module * { export * }
+}
