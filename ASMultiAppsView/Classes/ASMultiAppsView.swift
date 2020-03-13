@@ -11,193 +11,162 @@ import SnapKit
 
 public class ASMultiAppsView: UIView {
     
-    // Sets
-    public var images               = [UIImage]()
-    public var image_size           = CGSize()
-    public var image_gap            = CGFloat()
-    public var is_animate           = true
-    public var image_angle          = CGFloat()
-    public var image_radius         = CGFloat()
-    
-    public var contentView          = UIView()
-    public var angle_wrapper        = UIView()
-    
-    public func apart_init(card_width: CGFloat = 466, card_hight: CGFloat = 233,
-                    images: [UIImage] = [], animate: Bool = true,
-                    image_width: CGFloat = 66, image_hight: CGFloat = 66,
-                    image_angle: CGFloat = -23.33, image_gap: CGFloat = 12, image_radius: CGFloat = 8) {
-        self.images = images
-        self.image_size = CGSize(width: image_width, height: image_hight)
-        self.is_animate = animate
-        self.image_angle = image_angle
-        self.image_gap = image_gap
-        self.image_radius = image_radius
-        self.bounds.size = CGSize(width: card_width, height: card_hight)
-        self.startAnimations()
-        self.angle_wrapper.clipsToBounds = true
-
-        self.contentView.transform = CGAffineTransform(rotationAngle: -90 + self.image_angle)
+    public struct ASMultiAppsViewConfig {
+        public var imageGap             = CGFloat(12)
+        public var imageSize            = CGSize(width: 66, height: 66)
+        public var shouldAnimate        = true
+        public var imageAngle           = CGFloat(-23.33)
+        public var imageRadius          = CGFloat(8)
+        public var cardWidth            = CGFloat(466)
+        public var cardHeight           = CGFloat(233)
         
-        NotificationCenter.default.addObserver(self, selector:#selector(buildViews), name: .UIApplicationDidBecomeActive, object: nil)
+        public init() {}
+
+    }
+    
+    // Sets
+    private(set) var imageContainer       = [UIImage]()
+    private(set) var contentView          = UIView()
+    private(set) var angleWrapper         = UIView()
+    private(set) var config: ASMultiAppsViewConfig
+    
+    public required init?(coder: NSCoder) {
+        fatalError("ASMultiAppsView does not allow NSCoder init, use init(withCongif:) instead.")
+    }
+    
+    public required init(with _config: ASMultiAppsViewConfig) {
+        config = _config
+        super.init(frame: CGRect())    
+        NotificationCenter.default.addObserver(self, selector:#selector(bootStrap), name: .UIApplicationDidBecomeActive, object: nil)
+        
+        angleWrapper.clipsToBounds = true
+        addSubview(angleWrapper)
+        angleWrapper.snp.makeConstraints { (x) in
+            x.edges.equalTo(self.snp.edges)
+        }
+        angleWrapper.addSubview(contentView)
+        contentView.snp.makeConstraints { (x) in
+            x.edges.equalTo(angleWrapper)
+        }
+        setRotation(angle: config.imageAngle)
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
     
-    public func startAnimations() {
-        buildViews()
+    public func setImages(images: [UIImage]) {
+        imageContainer = images
+        bootStrap()
     }
     
-    public func endAnimations() {
-        for item in self.subviews {
+    public func setRotation(angle: CGFloat) {
+        contentView.transform = CGAffineTransform(rotationAngle: -90 + angle)
+    }
+    
+    public func getConfig() -> ASMultiAppsViewConfig {
+        return config
+    }
+    
+    @objc
+    func viewSaboteur() {
+        for item in contentView.subviews {
             item.removeFromSuperview()
         }
     }
     
     @objc
-    func buildViews() {
-        
-        endAnimations()
-        
-        
-        self.addSubview(angle_wrapper)
-        self.angle_wrapper.snp.makeConstraints { (x) in
-            x.top.equalTo(self.snp.top)
-            x.left.equalTo(self.snp.left)
-            x.right.equalTo(self.snp.right)
-            x.bottom.equalTo(self.snp.bottom)
+    func bootStrap() {
+        DispatchQueue.main.async {
+            self.viewConstructor()
         }
+    }
+    
+    private func viewConstructor() {
         
-        self.contentView = UIView()
-        self.angle_wrapper.addSubview(self.contentView)
-        self.contentView.snp.makeConstraints { (x) in
-            x.top.equalTo(self.angle_wrapper.snp.top)
-            x.left.equalTo(self.angle_wrapper.snp.left)
-            x.right.equalTo(self.angle_wrapper.snp.right)
-            x.bottom.equalTo(self.angle_wrapper.snp.bottom)
+        viewSaboteur()
+        
+        if imageContainer.count < 1 {
+            return
         }
         
         // 计算一行的View个数
-        let count = Int(self.bounds.width / (self.image_size.width + self.image_gap)) + 3
+        let itemPerLine = Int(bounds.width / (config.imageSize.width + config.imageGap)) + 3
         // 计算行数
-        var lines = Int(self.bounds.height / (self.image_size.height + self.image_gap)) + 1
+        var lineMax = Int(bounds.height / (config.imageSize.height + config.imageGap)) + 1
         
-        if image_angle != 0 {
-            lines += 3
-            self.contentView.snp.remakeConstraints { (x) in
-                x.top.equalTo(self.angle_wrapper.snp.top).offset(-128)
-                x.left.equalTo(self.angle_wrapper.snp.left)
-                x.right.equalTo(self.angle_wrapper.snp.right)
-                x.bottom.equalTo(self.angle_wrapper.snp.bottom).offset(128)
+        if config.imageAngle != 0 {
+            lineMax += 3
+            contentView.snp.remakeConstraints { (x) in
+                x.top.equalTo(angleWrapper.snp.top).offset(-128)
+                x.left.equalTo(angleWrapper.snp.left)
+                x.right.equalTo(angleWrapper.snp.right)
+                x.bottom.equalTo(angleWrapper.snp.bottom).offset(128)
+            }
+        } else {
+            contentView.snp.remakeConstraints { (x) in
+                x.edges.equalTo(angleWrapper)
             }
         }
         
-        for y in 1...lines {
-            let yp = CGFloat(y - 1) * (self.image_size.height + self.image_gap) + self.image_size.height / 2
+        for locationY in 1...lineMax {
+            // 计算一行有几个东西
+            let numberOfItemsPerLine = CGFloat(locationY - 1)
+                                        * (config.imageSize.height + config.imageGap)
+                                        + config.imageSize.height / 2
             // 计算行尾部位置
-            var end_of_the_game = CGFloat(count - 1) * (self.image_size.width + self.image_gap) + self.image_size.width / 2
-            if y % 2 == 1 {
-                end_of_the_game -= self.image_size.width / 2
+            var bottomPositionOfLine = CGFloat(itemPerLine - 1)
+                                        * (config.imageSize.width + config.imageGap)
+                                        + config.imageSize.width / 2
+            // 隔行处理
+            if locationY % 2 == 1 {
+                bottomPositionOfLine -= config.imageSize.width / 2
             }
-            for x in 1...count {
+            for itemIndex in 1...itemPerLine {
                 // 获取图像，先计算index
-                let index = Int((y * 2 + x) % images.count)
-                let image = self.images[index]
+                let index = Int((locationY * 2 + itemIndex) % imageContainer.count)
+                let image = imageContainer[index]
                 // 计算位置
-                var xp = CGFloat(x - 1) * (self.image_size.width + self.image_gap) + self.image_size.width / 2
-                if y % 2 == 1 {
-                    xp -= self.image_size.width / 2
+                var locationX = CGFloat(itemIndex - 1)
+                                * (config.imageSize.width + config.imageGap)
+                                + config.imageSize.width / 2
+                if locationY % 2 == 1 {
+                    locationX -= config.imageSize.width / 2
                 }
-                let center = CGPoint(x: xp, y: yp)
-                let image_view = UIImageView()
-                image_view.center = center
-                image_view.bounds.size = self.image_size
-                image_view.image = image
-                image_view.contentMode = .scaleAspectFill
-                image_view.layer.cornerRadius = self.image_radius;
-                image_view.layer.masksToBounds = true;
-                self.contentView.addSubview(image_view)
+                let centerAnchor = CGPoint(x: locationX, y: numberOfItemsPerLine)
+                let imageView = UIImageView()
+                imageView.center = centerAnchor
+                imageView.bounds.size = config.imageSize
+                imageView.image = image
+                imageView.contentMode = .scaleAspectFill
+                imageView.layer.cornerRadius = config.imageRadius;
+                imageView.layer.masksToBounds = true;
+                contentView.addSubview(imageView)
                 
-                let opts: UIView.AnimationOptions = [.curveLinear]
-                UIView.animate(withDuration: TimeInterval(Double(x) * 6.66), delay: 0, options: opts, animations: {
-                    image_view.center.x = image_view.center.x - CGFloat(x) * (self.image_size.width + self.image_gap)
-                }, completion: { _ in
-                    let endx = image_view.center.x
-                    image_view.center.x = end_of_the_game
-                    self.animate_my_image(start_x: end_of_the_game, end_x: endx, the_element: image_view, x: count)
-                })
-                
+                if config.shouldAnimate {
+                    bootStrapAnimation(itemIndex: itemIndex, target: imageView, loopInfo: (bottomPositionOfLine, itemPerLine))
+                }
             }
         }
         
     }
     
-    func animate_my_image(start_x: CGFloat, end_x: CGFloat, the_element: UIImageView, x: Int) {
-        
+    private func bootStrapAnimation(itemIndex: Int, target: UIView, loopInfo: (CGFloat, Int)) {
+        let opts: UIView.AnimationOptions = [.curveLinear]
+        UIView.animate(withDuration: TimeInterval(Double(itemIndex) * 6.66), delay: 0, options: opts, animations: {
+            target.center.x = target.center.x - CGFloat(itemIndex) * (self.config.imageSize.width + self.config.imageGap)
+        }, completion: { _ in
+            let endx = target.center.x
+            target.center.x = loopInfo.0
+            self.loopAnimationX(beginAt: loopInfo.0, endsAt: endx, target: target, offset: loopInfo.1)
+        })
+    }
+    
+    private func loopAnimationX(beginAt: CGFloat, endsAt: CGFloat, target: UIView, offset: Int) {
         let opts: UIView.AnimationOptions = [.curveLinear, .repeat, ]
-        UIView.animate(withDuration: TimeInterval(Double(x) * 6.66), delay: 0, options: opts, animations: {
-            the_element.center.x = end_x
+        UIView.animate(withDuration: TimeInterval(Double(offset) * 6.66), delay: 0, options: opts, animations: {
+            target.center.x = endsAt
         })
     }
     
 }
-
-
-
-//
-//  ViewController.swift
-//  ASMultiAppsView
-//
-//  Created by Lakr Aream on 2019/5/18.
-//  Copyright © 2019 Lakr Aream. All rights reserved.
-//
-
-//import UIKit
-//
-//class ViewController: UIViewController {
-//
-//    override func viewDidLoad() {
-//        super.viewDidLoad()
-//
-//        let image_container: [UIImage]   = [UIImage(named: "0")!,
-//                                            UIImage(named: "1")!,
-//                                            UIImage(named: "2")!,
-//                                            UIImage(named: "3")!,
-//                                            UIImage(named: "4")!]
-//
-//        let new = ASMultiAppsView()
-//        self.view.addSubview(new)
-//        new.apart_init(images: image_container)
-//        // There is a framework called NightNight, so I do this for future reuse.
-//        new.backgroundColor = .white
-//        new.setRadius()
-//        new.dropShadow()
-//        new.snp.makeConstraints { (x) in
-//            x.center.equalTo(self.view.snp.center)
-//            x.height.equalTo(new.bounds.height)
-//            x.width.equalTo(new.bounds.width)
-//        }
-//    }
-//
-//
-//}
-//
-//extension UIView {
-//
-//    func setRadius(how_much: CGFloat = 8) {
-//        self.layer.cornerRadius = how_much;
-//        self.layer.masksToBounds = true;
-//    }
-//
-//    func dropShadow() {
-//        self.layer.masksToBounds = false
-//        self.layer.shadowColor = UIColor.black.cgColor
-//        self.layer.shadowOpacity = 0.2
-//        self.layer.shadowOffset = CGSize(width: 8, height: 8)
-//        self.layer.shadowRadius = 8
-//        self.layer.shadowPath = UIBezierPath(rect: self.bounds).cgPath
-//        self.layer.shouldRasterize = true
-//        self.layer.rasterizationScale = UIScreen.main.scale
-//    }
-//}

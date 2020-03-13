@@ -4,13 +4,13 @@ import ASMultiAppsView
 class ViewController: UIViewController {
     
     lazy private var multiAppView: ASMultiAppsView = {
-        let multiAppView = ASMultiAppsView()
-        let image_container: [UIImage]   = [UIImage(named: "0")!,
-        UIImage(named: "1")!,
-        UIImage(named: "2")!,
-        UIImage(named: "3")!,
-        UIImage(named: "4")!]
-        multiAppView.apart_init(images: image_container)
+        let multiAppView = ASMultiAppsView(with: ASMultiAppsView.ASMultiAppsViewConfig())
+        let imgSets: [UIImage]   = [UIImage(named: "0")!,
+                                    UIImage(named: "1")!,
+                                    UIImage(named: "2")!,
+                                    UIImage(named: "3")!,
+                                    UIImage(named: "4")!]
+        multiAppView.setImages(images: imgSets)
         multiAppView.backgroundColor = .white
         multiAppView.setRadius()
         multiAppView.dropShadow()
@@ -23,8 +23,8 @@ class ViewController: UIViewController {
         self.view.addSubview(multiAppView)
         multiAppView.snp.makeConstraints { (x) in
             x.center.equalTo(self.view.snp.center)
-            x.height.equalTo(multiAppView.bounds.height)
-            x.width.equalTo(multiAppView.bounds.width)
+            x.height.equalTo(multiAppView.getConfig().cardHeight)
+            x.width.equalTo(multiAppView.getConfig().cardWidth)
         }
     }
     
