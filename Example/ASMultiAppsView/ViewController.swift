@@ -12,8 +12,6 @@ class ViewController: UIViewController {
                                     UIImage(named: "4")!]
         multiAppView.setImages(images: imgSets)
         multiAppView.backgroundColor = .white
-        multiAppView.setRadius()
-        multiAppView.dropShadow()
         return multiAppView
     }()
 
@@ -26,15 +24,14 @@ class ViewController: UIViewController {
             x.height.equalTo(multiAppView.getConfig().cardHeight)
             x.width.equalTo(multiAppView.getConfig().cardWidth)
         }
+        multiAppView.setRadius()
+        multiAppView.dropShadow()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
     }
-    
-    
-
 
 }
 
@@ -42,13 +39,11 @@ extension UIView {
 
     func setRadius(how_much: CGFloat = 8) {
         self.layer.cornerRadius = how_much;
-        self.layer.masksToBounds = true;
     }
 
     func dropShadow() {
-        self.layer.masksToBounds = false
         self.layer.shadowColor = UIColor.black.cgColor
-        self.layer.shadowOpacity = 0.2
+        self.layer.shadowOpacity = 0.5
         self.layer.shadowOffset = CGSize(width: 8, height: 8)
         self.layer.shadowRadius = 8
         self.layer.shadowPath = UIBezierPath(rect: self.bounds).cgPath
