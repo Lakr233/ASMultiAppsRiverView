@@ -1,0 +1,23 @@
+PODS:
+  - ASMultiAppsView (0.1.0):
+    - SnapKit
+  - SnapKit (4.2.0)
+
+DEPENDENCIES:
+  - ASMultiAppsView (from `../`)
+
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - SnapKit
+
+EXTERNAL SOURCES:
+  ASMultiAppsView:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  ASMultiAppsView: 9055fb29d3879117c5fdf6915cf6042f61df55fb
+  SnapKit: fe8a619752f3f27075cc9a90244d75c6c3f27e2a
+
+PODFILE CHECKSUM: 17de5a86f4d7da3d938a071548a3c678433cf2f8
+
+COCOAPODS: 1.9.1

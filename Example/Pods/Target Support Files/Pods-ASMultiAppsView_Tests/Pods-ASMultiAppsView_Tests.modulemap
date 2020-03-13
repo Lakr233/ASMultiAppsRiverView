@@ -1,0 +1,6 @@
+framework module Pods_ASMultiAppsView_Tests {
+  umbrella header "Pods-ASMultiAppsView_Tests-umbrella.h"
+
+  export *
+  module * { export * }
+}
